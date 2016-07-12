@@ -555,12 +555,12 @@ func (s *Service) Upload(path string, data io.Reader, prepend string, randomPubl
 // Url returns the complete access path in the cloud to the
 // resource designed by publicId or the empty string if
 // no match.
-func (s *Service) Url(publicId string, rtype ResourceType) string {
+func (s *Service) Url(publicId string, rtype ResourceType, version int) string {
 	path := imageType
 	if rtype == RawType {
 		path = rawType
 	}
-	return fmt.Sprintf("%s/%s/%s/upload/%s", baseResourceUrl, s.cloudName, path, publicId)
+	return fmt.Sprintf("%s/%s/%s/upload/v%d/%s", baseResourceUrl, s.cloudName, path, version, publicId)
 }
 
 func handleHttpResponse(resp *http.Response) (map[string]interface{}, error) {
