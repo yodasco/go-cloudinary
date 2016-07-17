@@ -287,8 +287,6 @@ func (s *Service) walkIt(path string, info os.FileInfo, err error) error {
 func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId bool, publicId string, localFile bool) (string, error) {
 	// Do not upload empty files
 
-	fmt.Println("CALLED")
-
 	fi, err := os.Stat(fullPath)
 	if err == nil && fi.Size() == 0 {
 		return fullPath, nil
@@ -421,7 +419,6 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 		}
 	} else {
 		// it's a url, so just pass on the url to cloudinary
-		fmt.Println("URL eh")
 		fw, err := w.CreateFormField("file")
 		if err != nil {
 			return fullPath, err
@@ -521,8 +518,6 @@ func (s *Service) UploadImage(path string, data io.Reader, prepend string) (stri
 //
 // The function returns the public identifier of the resource.
 func (s *Service) Upload(path string, data io.Reader, prepend string, randomPublicId bool, publicId string, rtype ResourceType, localFile bool) (string, error) {
-
-	fmt.Println("UPLOAD CALLED")
 
 	s.uploadResType = rtype
 	s.basePathDir = ""
