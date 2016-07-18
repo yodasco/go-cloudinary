@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	baseUploadUrl   = "http://api.cloudinary.com/v1_1"
-	baseResourceUrl = "http://res.cloudinary.com"
+	baseUploadUrl   = "https://api.cloudinary.com/v1_1"
+	baseResourceUrl = "https://res.cloudinary.com"
 	imageType       = "image"
 	rawType         = "raw"
 )
