@@ -28,6 +28,7 @@ const (
 )
 
 func (s *Service) dropAllResources(rtype ResourceType, w io.Writer) error {
+
 	qs := url.Values{
 		"max_results": []string{strconv.FormatInt(maxResults, 10)},
 	}
