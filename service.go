@@ -275,7 +275,7 @@ func (s *Service) walkIt(path string, info os.FileInfo, err error) error {
 	if info.IsDir() {
 		return nil
 	}
-	if _, err := s.uploadFile(path, nil, false, "", true); err != nil {
+	if _, err := s.uploadFile(path, nil, false, "", true, []string{}); err != nil {
 		return err
 	}
 	return nil
@@ -284,7 +284,7 @@ func (s *Service) walkIt(path string, info os.FileInfo, err error) error {
 // Upload file to the service. When using a mongoDB database for storing
 // file information (such as checksums), the database is updated after
 // any successful upload.
-func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId bool, publicId string, localFile bool) (string, error) {
+func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId bool, publicId string, localFile bool, tags []string) (string, error) {
 	// Do not upload empty files
 
 	fi, err := os.Stat(fullPath)
@@ -370,12 +370,24 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 		fd.Write([]byte(s.folder))
 	}
 
+	// Write tags
+	if len(tags) > 0 {
+		fd, err := w.CreateFormField("tags")
+		if err != nil {
+			return fullPath, err
+		}
+		fd.Write([]byte(strings.Join(tags, ",")))
+	}
+
 	// Write signature
 	// careful, there is no logic to check whether upload_preset/folder are set
 	// i.e. we are assuming that the user has set these
 	hash := sha1.New()
 	part := fmt.Sprintf("upload_preset=%s%s", s.preset, s.apiSecret)
 	part = fmt.Sprintf("timestamp=%s&%s", timestamp, part)
+	if len(tags) > 0 {
+		part = fmt.Sprintf("tags=%s&%s", strings.Join(tags, ","), part)
+	}
 	if !randomPublicId {
 		part = fmt.Sprintf("public_id=%s&%s", publicId, part)
 	}
@@ -481,19 +493,19 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 
 // helpers
 func (s *Service) UploadStaticRaw(path string, data io.Reader, prepend string) (string, error) {
-	return s.Upload(path, data, prepend, false, "", RawType, true)
+	return s.Upload(path, data, prepend, false, "", RawType, true, []string{})
 }
 
 func (s *Service) UploadStaticImage(path string, data io.Reader, prepend string) (string, error) {
-	return s.Upload(path, data, prepend, false, "", ImageType, true)
+	return s.Upload(path, data, prepend, false, "", ImageType, true, []string{})
 }
 
 func (s *Service) UploadRaw(path string, data io.Reader, prepend string) (string, error) {
-	return s.Upload(path, data, prepend, false, "", RawType, true)
+	return s.Upload(path, data, prepend, false, "", RawType, true, []string{})
 }
 
 func (s *Service) UploadImage(path string, data io.Reader, prepend string) (string, error) {
-	return s.Upload(path, data, prepend, false, "", ImageType, true)
+	return s.Upload(path, data, prepend, false, "", ImageType, true, []string{})
 }
 
 // Upload a file or a set of files to the cloud. The path parameter is
@@ -517,14 +529,14 @@ func (s *Service) UploadImage(path string, data io.Reader, prepend string) (stri
 // /tmp/images/logo.png will be stored as images/logo.
 //
 // The function returns the public identifier of the resource.
-func (s *Service) Upload(path string, data io.Reader, prepend string, randomPublicId bool, publicId string, rtype ResourceType, localFile bool) (string, error) {
+func (s *Service) Upload(path string, data io.Reader, prepend string, randomPublicId bool, publicId string, rtype ResourceType, localFile bool, tags []string) (string, error) {
 
 	s.uploadResType = rtype
 	s.basePathDir = ""
 	s.prependPath = prepend
 
 	if !localFile {
-		return s.uploadFile(path, nil, randomPublicId, publicId, localFile)
+		return s.uploadFile(path, nil, randomPublicId, publicId, localFile, tags)
 	}
 
 	if data == nil {
@@ -539,10 +551,10 @@ func (s *Service) Upload(path string, data io.Reader, prepend string, randomPubl
 				return path, err
 			}
 		} else {
-			return s.uploadFile(path, nil, randomPublicId, publicId, true)
+			return s.uploadFile(path, nil, randomPublicId, publicId, true, tags)
 		}
 	} else {
-		return s.uploadFile(path, data, randomPublicId, publicId, localFile)
+		return s.uploadFile(path, data, randomPublicId, publicId, localFile, tags)
 	}
 	return path, nil
 }
