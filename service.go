@@ -29,7 +29,6 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -291,7 +290,7 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 	if err == nil && fi.Size() == 0 {
 		return fullPath, nil
 		if s.verbose {
-			fmt.Println("Not uploading empty file: ", fullPath)
+			log.Println("Not uploading empty file: ", fullPath)
 		}
 	}
 	if publicId == "" {
@@ -311,16 +310,16 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 			}
 			if chk == match.Checksum {
 				if s.verbose {
-					fmt.Printf("%s: no local changes\n", fullPath)
+					log.Printf("%s: no local changes\n", fullPath)
 				} else {
-					fmt.Printf(".")
+					log.Printf(".")
 				}
 				return fullPath, nil
 			} else {
 				if s.verbose {
-					fmt.Println("File has changed locally, needs upload")
+					log.Println("File has changed locally, needs upload")
 				} else {
-					fmt.Printf("U")
+					log.Printf("U")
 				}
 				changedLocally = true
 			}
@@ -405,7 +404,7 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 	// Write file field
 	if localFile {
 		// local file, upload it
-		fmt.Println("Local file eh")
+		log.Println("Local file eh")
 		fw, err := w.CreateFormFile("file", fullPath)
 		if err != nil {
 			return fullPath, err
@@ -601,12 +600,12 @@ func (s *Service) Delete(publicId, prepend string, rtype ResourceType) error {
 	}
 	if s.keepFilesPattern != nil {
 		if s.keepFilesPattern.MatchString(prepend + publicId) {
-			fmt.Println("keep")
+			log.Println("keep")
 			return nil
 		}
 	}
 	if s.simulate {
-		fmt.Println("ok")
+		log.Println("ok")
 		return nil
 	}
 
@@ -630,7 +629,7 @@ func (s *Service) Delete(publicId, prepend string, rtype ResourceType) error {
 		return err
 	}
 	if e, ok := m["result"]; ok {
-		fmt.Println(e.(string))
+		log.Println(e.(string))
 	}
 	// Remove DB entry
 	if s.dbSession != nil {
